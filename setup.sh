@@ -1,20 +1,29 @@
 #!/bin/bash
 
 # Update package list and install dependencies
-sudo yum update -y
-sudo yum install -y yum-utils device-mapper-persistent-data lvm2
+sudo apt-get update -y
+sudo apt-get install -y ca-certificates curl gnupg lsb-release
+
+# Add Docker GPG key
+sudo mkdir -p /etc/apt/keyrings
+curl -fsSL https://download.docker.com/linux/debian/gpg | sudo gpg --dearmor -o /etc/apt/keyrings/docker.gpg
+sudo chmod a+r /etc/apt/keyrings/docker.gpg
 
 # Add Docker repository
-sudo amazon-linux-extras install docker
+echo \
+  "deb [arch=$(dpkg --print-architecture) signed-by=/etc/apt/keyrings/docker.gpg] https://download.docker.com/linux/debian \
+  $(lsb_release -cs) stable" | sudo tee /etc/apt/sources.list.d/docker.list > /dev/null
 
-# Install Docker
-sudo yum install -y docker
+# Update package list again and install Docker
+sudo apt-get update -y
+sudo apt-get install -y docker-ce docker-ce-cli containerd.io
 
 # Start Docker service
 sudo systemctl start docker
 sudo systemctl enable docker
 
 # Add current user to the Docker group
+sudo groupadd docker
 sudo usermod -aG docker $USER
 
 # Installation of Docker Compose
@@ -28,7 +37,5 @@ docker-compose --version
 
 echo "Docker & Docker Compose Installation Complete."
 
-# Add default 'ec2-user' to Docker group and reboot
-sudo usermod -aG docker ec2-user
-
+# Reboot the system to apply changes
 sudo reboot
