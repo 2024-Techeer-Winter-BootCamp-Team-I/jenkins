@@ -1,41 +1,36 @@
 #!/bin/bash
 
-# Update package list and install dependencies
-sudo apt-get update -y
-sudo apt-get install -y ca-certificates curl gnupg lsb-release
+# Update Package & Install Dependencies
+sudo apt-get update
+sudo apt-get install -y apt-transport-https ca-certificates curl software-properties-common
 
-# Add Docker GPG key
-sudo mkdir -p /etc/apt/keyrings
-curl -fsSL https://download.docker.com/linux/debian/gpg | sudo gpg --dearmor -o /etc/apt/keyrings/docker.gpg
-sudo chmod a+r /etc/apt/keyrings/docker.gpg
+# Add Docker’s official GPG key
+curl -fsSL https://download.docker.com/linux/ubuntu/gpg | sudo apt-key add -
 
-# Add Docker repository
-echo \
-  "deb [arch=$(dpkg --print-architecture) signed-by=/etc/apt/keyrings/docker.gpg] https://download.docker.com/linux/debian \
-  $(lsb_release -cs) stable" | sudo tee /etc/apt/sources.list.d/docker.list > /dev/null
+# Add Docker Repository
+sudo add-apt-repository "deb [arch=amd64] https://download.docker.com/linux/ubuntu $(lsb_release -cs) stable"
 
-# Update package list again and install Docker
-sudo apt-get update -y
-sudo apt-get install -y docker-ce docker-ce-cli containerd.io
+# Update Package & Install Docker
+sudo apt-get update
+sudo apt-get install -y docker-ce
 
-# Start Docker service
+# Start Docker Service
 sudo systemctl start docker
 sudo systemctl enable docker
 
-# Add current user to the Docker group
-sudo groupadd docker
+# Current User Add to Docker Group
 sudo usermod -aG docker $USER
 
 # Installation of Docker Compose
-DOCKER_COMPOSE_VERSION=1.29.2
-sudo curl -L "https://github.com/docker/compose/releases/download/${DOCKER_COMPOSE_VERSION}/docker-compose-$(uname -s)-$(uname -m)" -o /usr/local/bin/docker-compose
+sudo curl -L "https://github.com/docker/compose/releases/download/1.29.2/docker-compose-$(uname -s)-$(uname -m)" -o /usr/local/bin/docker-compose
 sudo chmod +x /usr/local/bin/docker-compose
 
-# Verify installation
+# 설치 확인
 docker --version
 docker-compose --version
 
 echo "Docker & Docker Compose Installation Complete."
 
-# Reboot the system to apply changes
-sudo reboot
+sudo usermod -aG docker ubuntu
+
+systemctl reboot
